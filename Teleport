@@ -1,0 +1,206 @@
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local UIS = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+
+local currentColor = Color3.fromRGB(0, 120, 255)
+local TOOL_NAME = "Equip to Click TP"
+
+-- ==========================================
+-- DRAGGABLE SYSTEM
+-- ==========================================
+local function MakeDraggable(frame, handle)
+    local dragging, dragStart, startPos
+    handle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+        end
+    end)
+    UIS.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local d = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+        end
+    end)
+    UIS.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+end
+
+-- ==========================================
+-- UI CREATION (FIXED POSITIONS CENTER)
+-- ==========================================
+local mainGui = Instance.new("ScreenGui")
+mainGui.Name = "WackShop_ClickTP_CustomClose"
+mainGui.IgnoreGuiInset = true
+mainGui.ResetOnSpawn = false
+mainGui.Parent = CoreGui
+
+local Main = Instance.new("Frame", mainGui)
+Main.Size = UDim2.fromOffset(180, 135)
+Main.AnchorPoint = Vector2.new(1, 0.5)
+Main.Position = UDim2.new(1, -20, 0.5, 0) -- ฝั่งขวา ตรงกลางจอพอดี
+Main.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+Main.BorderSizePixel = 0
+Main.ZIndex = 10
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
+local mainStroke = Instance.new("UIStroke", Main)
+mainStroke.Thickness = 1.5
+mainStroke.Color = currentColor
+
+local TitleBar = Instance.new("Frame", Main)
+TitleBar.Size = UDim2.new(1, 0, 0, 38)
+TitleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+TitleBar.BorderSizePixel = 0
+TitleBar.ZIndex = 10
+Instance.new("UICorner", TitleBar).CornerRadius = UDim.new(0, 10)
+
+local TitleLabel = Instance.new("TextLabel", TitleBar)
+TitleLabel.Size = UDim2.new(1, -40, 1, 0)
+TitleLabel.Position = UDim2.new(0, 10, 0, 0)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "📍 WackShop TP"
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.TextSize = 13
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.TextColor3 = currentColor
+TitleLabel.ZIndex = 10
+
+-- ==========================================
+-- MODERN CLOSE BUTTON (MODIFIED)
+-- ==========================================
+local destroyScriptBtn = Instance.new("ImageButton", TitleBar)
+destroyScriptBtn.Size = UDim2.fromOffset(24, 24)
+destroyScriptBtn.Position = UDim2.new(1, -32, 0, 7)
+destroyScriptBtn.BackgroundColor3 = Color3.fromRGB(240, 70, 70)
+destroyScriptBtn.Image = "rbxassetid://10747384394" -- ไอคอน X สไตล์ Minimal แบบเรียบหรู
+destroyScriptBtn.ImageColor3 = Color3.fromRGB(255, 255, 255)
+destroyScriptBtn.ZIndex = 11
+Instance.new("UICorner", destroyScriptBtn).CornerRadius = UDim.new(0, 6)
+
+-- เอฟเฟกต์เวลาชี้เมาส์ (Hover Effect)
+destroyScriptBtn.MouseEnter:Connect(function()
+    destroyScriptBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+end)
+destroyScriptBtn.MouseLeave:Connect(function()
+    destroyScriptBtn.BackgroundColor3 = Color3.fromRGB(240, 70, 70)
+end)
+
+MakeDraggable(Main, TitleBar)
+
+-- ปุ่มตัว W อยู่ฝั่งซ้ายตรงกลางจอพอดี (ใช้กดเปิด-ปิด/ซ่อน หน้าต่างหลัก)
+local FloatBtn = Instance.new("TextButton", mainGui)
+FloatBtn.Size = UDim2.fromOffset(44, 44)
+FloatBtn.AnchorPoint = Vector2.new(0, 0.5)
+FloatBtn.Position = UDim2.new(0, 15, 0.5, 0) -- ฝั่งซ้าย ตรงกลางจอพอดี
+FloatBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+FloatBtn.Text = "W"
+FloatBtn.TextSize = 18
+FloatBtn.Font = Enum.Font.GothamBold
+FloatBtn.TextColor3 = currentColor
+FloatBtn.ZIndex = 20
+Instance.new("UICorner", FloatBtn).CornerRadius = UDim.new(1, 0)
+local floatStroke = Instance.new("UIStroke", FloatBtn)
+floatStroke.Thickness = 1.5
+floatStroke.Color = currentColor
+MakeDraggable(FloatBtn, FloatBtn)
+
+-- เปิด/ปิด การมองเห็นหน้าต่างด้วยปุ่ม W
+FloatBtn.MouseButton1Click:Connect(function() Main.Visible = not Main.Visible end)
+
+-- ==========================================
+-- BUTTONS CREATOR
+-- ==========================================
+
+-- 1. ปุ่มเสกเครื่องมือวาร์ป
+local GiveTPToolBtn = Instance.new("TextButton", Main)
+GiveTPToolBtn.Size = UDim2.new(0, 155, 0, 30)
+GiveTPToolBtn.Position = UDim2.new(0, 12, 0, 50)
+GiveTPToolBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+GiveTPToolBtn.Font = Enum.Font.GothamBold
+GiveTPToolBtn.TextSize = 12
+GiveTPToolBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+GiveTPToolBtn.Text = "🛠️ เสกเครื่องมือคลิกวาร์ป"
+GiveTPToolBtn.ZIndex = 10
+Instance.new("UICorner", GiveTPToolBtn).CornerRadius = UDim.new(0, 6)
+
+-- 2. ปุ่มลบเครื่องมือวาร์ป
+local RemoveTPToolBtn = Instance.new("TextButton", Main)
+RemoveTPToolBtn.Size = UDim2.new(0, 155, 0, 30)
+RemoveTPToolBtn.Position = UDim2.new(0, 12, 0, 90)
+RemoveTPToolBtn.BackgroundColor3 = Color3.fromRGB(200, 100, 0)
+RemoveTPToolBtn.Font = Enum.Font.GothamBold
+RemoveTPToolBtn.TextSize = 12
+RemoveTPToolBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RemoveTPToolBtn.Text = "❌ ลบเครื่องมือคลิกวาร์ป"
+RemoveTPToolBtn.ZIndex = 10
+Instance.new("UICorner", RemoveTPToolBtn).CornerRadius = UDim.new(0, 6)
+
+-- ==========================================
+-- CORE INTERACTIONS LOGIC
+-- ==========================================
+
+-- ฟังก์ชันเมื่อกดปุ่มไอคอนปิด -> ปิดและทำลายสคริปต์ทิ้งถาวร
+destroyScriptBtn.MouseButton1Click:Connect(function()
+    mainGui:Destroy()
+    print("⛔ WackShop CLICK TP TOOL Script has been completely shut down via Red Button.")
+end)
+
+-- ฟังก์ชันสำหรับเสกไอเทม
+GiveTPToolBtn.MouseButton1Click:Connect(function()
+    local mouse = LocalPlayer:GetMouse()
+    local tool = Instance.new("Tool")
+    
+    tool.RequiresHandle = false
+    tool.Name = TOOL_NAME
+    
+    tool.Activated:Connect(function()
+        local pos = mouse.Hit + Vector3.new(0, 2.5, 0)
+        pos = CFrame.new(pos.X, pos.Y, pos.Z)
+        
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = pos
+        end
+    end)
+    
+    tool.Parent = LocalPlayer.Backpack
+    
+    GiveTPToolBtn.Text = "✅ เสกไอเทมสำเร็จ!"
+    task.wait(1)
+    GiveTPToolBtn.Text = "🛠️ เสกเครื่องมือคลิกวาร์ป"
+end)
+
+-- ฟังก์ชันสำหรับลบไอเทมออกจากตัว
+RemoveTPToolBtn.MouseButton1Click:Connect(function()
+    local removedCount = 0
+    
+    for _, item in ipairs(LocalPlayer.Backpack:GetChildren()) do
+        if item:IsA("Tool") and item.Name == TOOL_NAME then
+            item:Destroy()
+            removedCount = removedCount + 1
+        end
+    end
+    
+    if LocalPlayer.Character then
+        for _, item in ipairs(LocalPlayer.Character:GetChildren()) do
+            if item:IsA("Tool") and item.Name == TOOL_NAME then
+                item:Destroy()
+                removedCount = removedCount + 1
+            end
+        end
+    end
+    
+    if removedCount > 0 then
+        RemoveTPToolBtn.Text = "✅ ลบไอเทมเรียบร้อย!"
+    else
+        RemoveTPToolBtn.Text = "💨 ไม่พบไอเทมในตัว"
+    end
+    task.wait(1)
+    RemoveTPToolBtn.Text = "❌ ลบเครื่องมือคลิกวาร์ป"
+end)
+
+print("✅ WackShop TITELBAR-CLOSE CLICK TP TOOL Loaded successfully!")
